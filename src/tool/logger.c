@@ -185,7 +185,7 @@ enum log_facility log_get_facility(const char * facility)
 
 const char * log_get_facility_name(enum log_facility lf)
 {
-  if  (lf > 0 && lf < ARRLEN(log_facility_txt))
+  if  (lf >= 0 && lf < ARRLEN(log_facility_txt))
     return log_facility_txt[lf];
   return NULL;
 }
