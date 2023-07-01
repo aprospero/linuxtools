@@ -77,7 +77,7 @@ static void log_stdout_stderr(const enum log_level ll, const char * format, va_l
     case LL_WARN    : fd = stderr; break;
     default         : fd = stdout; break;
   }
-  fprintf (fd, "[%s.%ld][%s] %s\n", tim, tp.tv_nsec / 1000, log_level_txt[ll], tmp);
+  fprintf (fd, "[%s.%06ld][%s] %s\n", tim, tp.tv_nsec / 1000, log_level_txt[ll], tmp);
 }
 
 
