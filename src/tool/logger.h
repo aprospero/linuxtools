@@ -40,6 +40,8 @@ enum log_facility
 #define MAX_LOG_LEN 256
 #endif
 
+#define LG_DBGMX(FORMAT, ...) log_push(LL_DEBUG_MAX, FORMAT, ##__VA_ARGS__)
+#define LG_DBGMR(FORMAT, ...) log_push(LL_DEBUG_MORE, FORMAT, ##__VA_ARGS__)
 #define LG_DEBUG(FORMAT, ...) log_push(LL_DEBUG, FORMAT, ##__VA_ARGS__)
 #define LG_EVENT(FORMAT, ...) log_push(LL_EVENT, FORMAT, ##__VA_ARGS__)
 #define LG_INFO(FORMAT, ... ) log_push(LL_INFO, FORMAT, ##__VA_ARGS__)
