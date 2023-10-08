@@ -2,6 +2,7 @@
 #define _H_LINUXTOOLS_TOOL_LOGGER
 
 #include <stdarg.h>
+#include <stddef.h>
 
 #include "../stuff.h"
 
