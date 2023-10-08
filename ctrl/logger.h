@@ -3,7 +3,7 @@
 
 #include <stdarg.h>
 
-#include "stuff.h"
+#include "../stuff.h"
 
 enum log_level
 {

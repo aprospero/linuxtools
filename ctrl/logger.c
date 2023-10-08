@@ -6,7 +6,7 @@
 #include <syslog.h>
 
 #include "logger.h"
-#include "stringhelp.h"
+#include "../stringhelp.h"
 
 typedef void (*logfct)(const enum log_level ll, const char * format, va_list argp);
 
