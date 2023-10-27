@@ -65,7 +65,7 @@ extern "C"
   const char * log_get_level_name(enum log_level ll, int do_fulltext);
   const char * log_get_facility_name(enum log_facility lf);
 
-  void log_push(const enum log_level ll, const char * format, ...) __attribute__((format(printf, 2, 3)));
+  void log_push(const enum log_level ll, const char * format, ...)__attribute__((format(gnu_printf, 2, 3)));
 
 #ifdef __cplusplus
 }
