@@ -201,3 +201,9 @@ void log_push(const enum log_level ll, const char * format, ...)
     va_end(ap);
   }
 }
+
+void log_push_v(const enum log_level ll, const char * format, va_list argp)
+{
+  if (ll >= 0 && ll < LL_COUNT && log.level[ll] && log.fct)
+    log.fct(ll, format, argp);
+}
