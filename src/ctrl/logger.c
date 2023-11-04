@@ -165,7 +165,7 @@ const char * log_get_level_name(enum log_level ll, int do_fulltext)
 
 enum log_level log_get_level_no(const char * level)
 {
-  for (int i = 0; i < ARRLEN(log_level_fulltxt); i++)
+  for (size_t i = 0; i < ARRLEN(log_level_fulltxt); i++)
   {
     if (stricmp(log_level_fulltxt[i], level) == 0)
       return (enum log_level) i;
@@ -175,7 +175,7 @@ enum log_level log_get_level_no(const char * level)
 
 enum log_facility log_get_facility(const char * facility)
 {
-  for (int i = 0; i < ARRLEN(log_facility_txt); i++)
+  for (size_t i = 0; i < ARRLEN(log_facility_txt); i++)
   {
     if (stricmp(log_facility_txt[i], facility) == 0)
       return (enum log_facility) i;

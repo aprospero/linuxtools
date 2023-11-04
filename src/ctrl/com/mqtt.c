@@ -16,11 +16,13 @@ struct mqtt_handle
     int               qos;
 };
 
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 
 void on_connect(struct mosquitto *mosq, void *userdata, int mid)
 {
   LG_INFO("MQTT - Connection to broker established.");
 }
+
 void on_publish(struct mosquitto *mosq, void *userdata, int mid)
 {
 //  LG_DEBUG("MQTT - Value published.");
@@ -30,6 +32,8 @@ void on_disconnect(struct mosquitto *mosq, void *userdata, int mid)
 {
   LG_ERROR("MQTT - Connection to broker disconnected!");
 }
+
+#pragma GCC diagnostic warning "-Wunused-parameter"
 
 
 struct mqtt_handle * mqtt_init(const char * client_id, const char * topic, int qos)
@@ -111,7 +115,7 @@ void mqtt_publish_formatted(struct mqtt_handle * hnd, const char * type, const c
   result = vsnprintf(tmp_val, sizeof(tmp_val), fmt, ap);
   va_end(ap);
 
-  if (result >= sizeof(tmp_val))
+  if (result >= ssizeof(tmp_val))
   {
     LG_ERROR("MQTT - publishing for %s:%s failed - format string exceeded size of %d chars.", type, entity, sizeof(tmp_val));
     return;
@@ -119,7 +123,7 @@ void mqtt_publish_formatted(struct mqtt_handle * hnd, const char * type, const c
 
   result = snprintf(tmp_msg, sizeof(tmp_msg), "%s,type=%s value=%s", entity, type, tmp_val);
 
-  if (result >= sizeof(tmp_msg))
+  if (result >= ssizeof(tmp_msg))
   {
     LG_ERROR("MQTT - publishing for %s:%s failed - output string exceeded size of %d chars.", type, entity, sizeof(tmp_msg));
     return;

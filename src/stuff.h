@@ -19,5 +19,7 @@
 #define ARRLEN(ARR) (sizeof(ARR) / sizeof((ARR)[0]))
 #endif
 
+#define ssizeof(TYPE) ((int) sizeof(TYPE))
+
 
 #endif  // _H_LINUXTOOLS_MISSING
