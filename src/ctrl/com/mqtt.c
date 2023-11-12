@@ -7,13 +7,13 @@
 #include <string.h>
 #include <mosquitto.h>
 
+#include "mqtt.h"
 #include "../logger.h"
 
 struct mqtt_handle
 {
-    const char       *topic;
-    struct mosquitto *mosq;
-    int               qos;
+  struct mosquitto * mosq;
+  struct mqtt_config * cfg;
 };
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
@@ -36,7 +36,7 @@ void on_disconnect(struct mosquitto *mosq, void *userdata, int mid)
 #pragma GCC diagnostic warning "-Wunused-parameter"
 
 
-struct mqtt_handle * mqtt_init(const char * client_id, const char * topic, int qos)
+struct mqtt_handle * mqtt_init(struct mqtt_config * cfg)
 {
   int result;
   int doLog = TRUE;
@@ -50,12 +50,11 @@ struct mqtt_handle * mqtt_init(const char * client_id, const char * topic, int q
     return NULL;
   }
 
-  hnd->topic = topic;
-  hnd->qos = qos;
+  hnd->cfg = cfg;
   mosquitto_lib_init();
   LG_DEBUG("Initialized MQTT library.");
 
-  hnd->mosq = mosquitto_new(client_id, TRUE, NULL);
+  hnd->mosq = mosquitto_new(hnd->cfg->client_id, TRUE, NULL);
   if (hnd->mosq == NULL)
   {
     LG_CRITICAL("MQTT - Could not instantiate a broker socket.");
@@ -64,7 +63,7 @@ struct mqtt_handle * mqtt_init(const char * client_id, const char * topic, int q
 
   LG_DEBUG("Instantiated a broker socket.");
 
-  result = mosquitto_username_pw_set(hnd->mosq, client_id, client_id);
+  result = mosquitto_username_pw_set(hnd->mosq, hnd->cfg->client_id, hnd->cfg->client_id);
   if (result != MOSQ_ERR_SUCCESS)
   {
     LG_CRITICAL("MQTT - Could not set broker user: %d\n", result);
@@ -79,7 +78,7 @@ struct mqtt_handle * mqtt_init(const char * client_id, const char * topic, int q
 
   LG_DEBUG("MQTT broker callbacks set.");
 
-  while ((result = mosquitto_connect(hnd->mosq, "localhost", 1883, 10)) != MOSQ_ERR_SUCCESS)
+  while ((result = mosquitto_connect(hnd->mosq, hnd->cfg->remote_address, hnd->cfg->remote_port, 10)) != MOSQ_ERR_SUCCESS)
   {
     if (result == MOSQ_ERR_ERRNO)
     {
@@ -129,8 +128,8 @@ void mqtt_publish_formatted(struct mqtt_handle * hnd, const char * type, const c
     return;
   }
 
-  LG_DEBUG("MQTT - publishing in topic %s: %s.", hnd->topic, tmp_msg);
-  result = mosquitto_publish(hnd->mosq, NULL, hnd->topic, strlen(tmp_msg), tmp_msg, hnd->qos, FALSE);
+  LG_DEBUG("MQTT - publishing in topic %s: %s.", hnd->cfg->topic, tmp_msg);
+  result = mosquitto_publish(hnd->mosq, NULL, hnd->cfg->topic, strlen(tmp_msg), tmp_msg, hnd->cfg->qos, FALSE);
 
   switch (result)
   {
