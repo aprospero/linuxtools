@@ -36,70 +36,63 @@ void on_disconnect(struct mosquitto *mosq, void *userdata, int mid)
 #pragma GCC diagnostic warning "-Wunused-parameter"
 
 
-struct mqtt_handle * mqtt_init(struct mqtt_config * cfg)
+enum mqtt_retval mqtt_init(struct mqtt_handle ** hnd, struct mqtt_config * cfg)
 {
   int result;
-  int doLog = TRUE;
-  struct mqtt_handle * hnd = calloc(sizeof(struct mqtt_handle), 1);
 
-  LG_DEBUG("Initializing connection to MQTT broker.");
-
-  if (hnd == NULL)
+  if (*hnd == NULL)
   {
-    LG_CRITICAL("Could not allocate resources for MQTT Connection!");
-    return NULL;
-  }
+    LG_DEBUG("Initializing connection to MQTT broker.");
 
-  hnd->cfg = cfg;
-  mosquitto_lib_init();
-  LG_DEBUG("Initialized MQTT library.");
-
-  hnd->mosq = mosquitto_new(hnd->cfg->client_id, TRUE, NULL);
-  if (hnd->mosq == NULL)
-  {
-    LG_CRITICAL("MQTT - Could not instantiate a broker socket.");
-    goto init_mqtt_fail;
-  }
-
-  LG_DEBUG("Instantiated a broker socket.");
-
-  result = mosquitto_username_pw_set(hnd->mosq, hnd->cfg->client_id, hnd->cfg->client_id);
-  if (result != MOSQ_ERR_SUCCESS)
-  {
-    LG_CRITICAL("MQTT - Could not set broker user: %d\n", result);
-    goto init_mqtt_fail;
-  }
-
-  LG_DEBUG("Set a MQTT broker user.");
-
-  mosquitto_publish_callback_set(hnd->mosq, on_publish);
-  mosquitto_connect_callback_set(hnd->mosq, on_connect);
-  mosquitto_disconnect_callback_set(hnd->mosq, on_disconnect);
-
-  LG_DEBUG("MQTT broker callbacks set.");
-
-  while ((result = mosquitto_connect(hnd->mosq, hnd->cfg->remote_address, hnd->cfg->remote_port, 10)) != MOSQ_ERR_SUCCESS)
-  {
-    if (result == MOSQ_ERR_ERRNO)
+    *hnd = calloc(sizeof(struct mqtt_handle), 1);
+    if (*hnd == NULL)
     {
-      if (doLog)
-        LG_WARN("MQTT - Could not connect to broker. Syscall returned '%s'. Retry every 5 sec.", strerror(errno));
-      doLog = FALSE;
-    }
-    else
-    {
-      LG_CRITICAL("MQTT - Could not connect to broker. Connect returned: %u", result);
+      LG_CRITICAL("Could not allocate resources for MQTT Connection!");
       goto init_mqtt_fail;
     }
-    sleep(5);
+
+    (*hnd)->cfg = cfg;
+    mosquitto_lib_init();
+    LG_DEBUG("MQTT library initialized.");
+
+    (*hnd)->mosq = mosquitto_new((*hnd)->cfg->client_id, TRUE, NULL);
+    if ((*hnd)->mosq == NULL)
+    {
+      LG_CRITICAL("MQTT - Could not instantiate a broker socket.");
+      goto init_mqtt_fail;
+    }
+    LG_DEBUG("MQTT broker socket instantiated.");
+
+    result = mosquitto_username_pw_set((*hnd)->mosq, (*hnd)->cfg->client_id, (*hnd)->cfg->client_id);
+    if (result != MOSQ_ERR_SUCCESS)
+    {
+      LG_CRITICAL("Could not set MQTT broker user: %d\n", result);
+      goto init_mqtt_fail;
+    }
+    LG_DEBUG("MQTT broker user set.");
+
+    mosquitto_publish_callback_set((*hnd)->mosq, on_publish);
+    mosquitto_connect_callback_set((*hnd)->mosq, on_connect);
+    mosquitto_disconnect_callback_set((*hnd)->mosq, on_disconnect);
+    LG_DEBUG("MQTT broker callbacks set.");
+  }
+
+  if ((result = mosquitto_connect((*hnd)->mosq, (*hnd)->cfg->remote_address, (*hnd)->cfg->remote_port, 10)) != MOSQ_ERR_SUCCESS)
+  {
+    if (result == MOSQ_ERR_ERRNO)
+      return MQTT_RET_RETRY;
+    LG_CRITICAL("MQTT - Could not connect to broker. Connect returned: %u", result);
+    goto init_mqtt_fail;
   }
   LG_DEBUG("Success - MQTT broker connected.");
-  return hnd;
+  return MQTT_RET_OK;
 
 init_mqtt_fail:
-
-  free(hnd);
-  return NULL;
+  if (*hnd) {
+    free(*hnd);
+    *hnd = NULL;
+  }
+  return MQTT_RET_FAILED;
 }
 
 

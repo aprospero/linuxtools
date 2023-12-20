@@ -3,6 +3,13 @@
 
 struct mqtt_handle;
 
+enum mqtt_retval
+{
+  MQTT_RET_OK,
+  MQTT_RET_RETRY,
+  MQTT_RET_FAILED
+};
+
 
 struct mqtt_config
 {
@@ -19,7 +26,7 @@ extern "C"
 {
 #endif
 
-  struct mqtt_handle * mqtt_init(struct mqtt_config * cfg);
+  enum mqtt_retval mqtt_init(struct mqtt_handle ** hnd, struct mqtt_config * cfg);
 
   void mqtt_publish(struct mqtt_handle * hnd, const char * type, const char * entity, int value);
   void mqtt_publish_formatted(struct mqtt_handle * hnd, const char * type, const char * entity, const char * fmt, ...);
