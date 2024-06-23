@@ -66,7 +66,7 @@ enum mqtt_retval mqtt_init(struct mqtt_handle ** hnd, struct mqtt_config * cfg)
     result = mosquitto_username_pw_set((*hnd)->mosq, (*hnd)->cfg->client_id, (*hnd)->cfg->client_id);
     if (result != MOSQ_ERR_SUCCESS)
     {
-      LG_CRITICAL("Could not set MQTT broker user: %d\n", result);
+      LG_CRITICAL("Could not set MQTT broker user: %d", result);
       goto init_mqtt_fail;
     }
     LG_DEBUG("MQTT broker user set.");
@@ -135,7 +135,7 @@ void mqtt_publish_formatted(struct mqtt_handle * hnd, const char * type, const c
     case MOSQ_ERR_MALFORMED_UTF8     :
     case MOSQ_ERR_QOS_NOT_SUPPORTED  :
     case MOSQ_ERR_OVERSIZE_PACKET    :
-      LG_ERROR("MQTT - Could not publish to broker. Error returned: %u\n", result);
+      LG_ERROR("MQTT - Could not publish to broker. Error returned: %u", result);
       break;
   }
 }
@@ -155,16 +155,16 @@ void mqtt_loop(struct mqtt_handle * hnd, int timeout)
     case MOSQ_ERR_SUCCESS   : break;
     case MOSQ_ERR_NO_CONN   :
       result = mosquitto_reconnect(hnd->mosq);
-      LG_INFO("MQTT - disconnected. Reconnect returns %d.\n", result);
+      LG_INFO("MQTT - disconnected. Reconnect returns %d.", result);
       break;
     case MOSQ_ERR_INVAL     :
     case MOSQ_ERR_NOMEM     :
     case MOSQ_ERR_CONN_LOST :
     case MOSQ_ERR_PROTOCOL  :
-      LG_CRITICAL("MQTT - Could not process broker. Error returned: %u\n", result);
+      LG_CRITICAL("MQTT - Could not process broker. Error returned: %u", result);
       break;
     case MOSQ_ERR_ERRNO     :
-      LG_CRITICAL("MQTT - Could not process broker. Syscall returned %s\n", strerror(errno));
+      LG_CRITICAL("MQTT - Could not process broker. Syscall returned %s", strerror(errno));
       break;
   }
 }
