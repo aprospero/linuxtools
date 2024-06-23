@@ -84,6 +84,7 @@ static void log_stdout_stderr(const enum log_level ll, const char * format, va_l
 
 const int ll_translation[LL_COUNT] =
 {
+  LOG_INFO,    /*  LL_NONE        */
   LOG_CRIT,    /*  LL_CRITICAL    */
   LOG_ERR,     /*  LL_ERROR       */
   LOG_WARNING, /*  LL_WARN        */
