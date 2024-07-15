@@ -18,14 +18,42 @@ struct mqtt_handle
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
-void on_connect(struct mosquitto *mosq, void *userdata, int mid)
+void on_connect(struct mosquitto * mosq, void * userdata, int mid)
 {
+  struct mqtt_handle * hnd = (struct mqtt_handle *) userdata;
   LG_INFO("MQTT - Connection to broker established.");
+  if (mid == 0 && hnd->cfg->subs) {
+    struct mqtt_sub * sub = hnd->cfg->subs;
+    while (sub && sub->pattern && sub->pattern[0] != '\0') {
+      switch (mosquitto_subscribe(mosq, &sub->id, sub->pattern, hnd->cfg->qos)) {
+        case MOSQ_ERR_INVAL:           LG_ERROR("Could not subscribe %s - invalid params.", sub->pattern);   break;
+        case MOSQ_ERR_NOMEM:           LG_ERROR("Could not subscribe %s - out of memory.", sub->pattern);    break;
+        case MOSQ_ERR_NO_CONN:         LG_ERROR("Could not subscribe %s - no connection.", sub->pattern);    break;
+        case MOSQ_ERR_MALFORMED_UTF8:  LG_ERROR("Could not subscribe %s - no valid utf-8.", sub->pattern);   break;
+        case MOSQ_ERR_OVERSIZE_PACKET: LG_ERROR("Could not subscribe %s - oversized packet.", sub->pattern); break;
+        case MOSQ_ERR_SUCCESS:         LG_INFO("Subscribed %s as message ID %d.", sub->pattern, sub->id);    break;
+        default:                       break;
+      }
+      ++sub;
+    }
+  }
+
 }
 
-void on_publish(struct mosquitto *mosq, void *userdata, int mid)
+void on_publish(struct mosquitto *mosq, void * userdata, int mid)
 {
 //  LG_DEBUG("MQTT - Value published.");
+}
+
+void on_message(struct mosquitto *mosq, void * userdata, const struct mosquitto_message * msg) {
+  struct mqtt_handle * hnd = (struct mqtt_handle *) userdata;
+  LG_INFO("Received message on topic %s (id:%d): %s.", msg->topic, msg->mid, (char *) msg->payload);
+  for (struct mqtt_sub * sub = hnd->cfg->subs; sub && sub->pattern && sub->pattern[0] != '\0'; ++sub) {
+    if (sub->id == msg->mid && sub->cb) {
+      sub->cb(msg->topic, (char *) msg->payload);
+      break;
+    }
+  }
 }
 
 void on_disconnect(struct mosquitto *mosq, void *userdata, int mid)
@@ -55,7 +83,7 @@ enum mqtt_retval mqtt_init(struct mqtt_handle ** hnd, struct mqtt_config * cfg)
     mosquitto_lib_init();
     LG_DEBUG("MQTT library initialized.");
 
-    (*hnd)->mosq = mosquitto_new((*hnd)->cfg->client_id, TRUE, NULL);
+    (*hnd)->mosq = mosquitto_new((*hnd)->cfg->client_id, TRUE, *hnd);
     if ((*hnd)->mosq == NULL)
     {
       LG_CRITICAL("MQTT - Could not instantiate a broker socket.");
@@ -74,6 +102,7 @@ enum mqtt_retval mqtt_init(struct mqtt_handle ** hnd, struct mqtt_config * cfg)
     mosquitto_publish_callback_set((*hnd)->mosq, on_publish);
     mosquitto_connect_callback_set((*hnd)->mosq, on_connect);
     mosquitto_disconnect_callback_set((*hnd)->mosq, on_disconnect);
+    mosquitto_message_callback_set((*hnd)->mosq, on_message);
     LG_DEBUG("MQTT broker callbacks set.");
   }
 

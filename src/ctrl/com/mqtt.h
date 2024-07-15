@@ -10,14 +10,21 @@ enum mqtt_retval
   MQTT_RET_FAILED
 };
 
+struct mqtt_sub {
+  const char * pattern;
+  void (*cb)(const char * topic, const char * value);
+  int          id;
+};
+
 
 struct mqtt_config
 {
-  const char * remote_address;
-  int          remote_port;
-  const char * client_id;
-  const char * topic;
-  int          qos;
+  const char *      remote_address;
+  int               remote_port;
+  const char *      client_id;
+  const char *      topic;
+  int               qos;
+  struct mqtt_sub * subs;
 };
 
 
