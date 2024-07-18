@@ -10,14 +10,15 @@
 #define DEFAULT_LOG_FAC LF_STDOUT
 #define DEFAULT_LOG_LEVEL LL_INFO
 
-void receive_test(const char * topic, const char * value) {
-  LG_INFO("received %s -> %s.", topic, value);
+void receive_test(const char * topic, const char * payload) {
+  LG_INFO("received %s -> %s.", topic, payload);
 }
 
 struct mqtt_sub subs[] = {
-                            { "grafana/activate_circ", receive_test, 0 },
-                            { NULL  , NULL        , 0 }
-                          };
+                           { "MTDC"            , receive_test},
+                           { "grafana/circ1_on", receive_test},
+                           { NULL              , NULL        }
+                         };
 
 
 struct mqtt_config cfg = {

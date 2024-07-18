@@ -11,9 +11,8 @@ enum mqtt_retval
 };
 
 struct mqtt_sub {
-  const char * pattern;
-  void (*cb)(const char * topic, const char * value);
-  int          id;
+  const char * topic;
+  void (*cb)(const char * topic, const char * payload);
 };
 
 

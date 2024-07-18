@@ -22,16 +22,16 @@ void on_connect(struct mosquitto * mosq, void * userdata, int mid)
 {
   struct mqtt_handle * hnd = (struct mqtt_handle *) userdata;
   LG_INFO("MQTT - Connection to broker established.");
-  if (mid == 0 && hnd->cfg->subs) {
+  if (hnd->cfg->subs) {
     struct mqtt_sub * sub = hnd->cfg->subs;
-    while (sub && sub->pattern && sub->pattern[0] != '\0') {
-      switch (mosquitto_subscribe(mosq, &sub->id, sub->pattern, hnd->cfg->qos)) {
-        case MOSQ_ERR_INVAL:           LG_ERROR("Could not subscribe %s - invalid params.", sub->pattern);   break;
-        case MOSQ_ERR_NOMEM:           LG_ERROR("Could not subscribe %s - out of memory.", sub->pattern);    break;
-        case MOSQ_ERR_NO_CONN:         LG_ERROR("Could not subscribe %s - no connection.", sub->pattern);    break;
-        case MOSQ_ERR_MALFORMED_UTF8:  LG_ERROR("Could not subscribe %s - no valid utf-8.", sub->pattern);   break;
-        case MOSQ_ERR_OVERSIZE_PACKET: LG_ERROR("Could not subscribe %s - oversized packet.", sub->pattern); break;
-        case MOSQ_ERR_SUCCESS:         LG_INFO("Subscribed %s as message ID %d.", sub->pattern, sub->id);    break;
+    while (sub && sub->topic) {
+      switch (mosquitto_subscribe(mosq, NULL, sub->topic, hnd->cfg->qos)) {
+        case MOSQ_ERR_INVAL:           LG_ERROR("Could not subscribe %s - invalid params.", sub->topic);   break;
+        case MOSQ_ERR_NOMEM:           LG_ERROR("Could not subscribe %s - out of memory.", sub->topic);    break;
+        case MOSQ_ERR_NO_CONN:         LG_ERROR("Could not subscribe %s - no connection.", sub->topic);    break;
+        case MOSQ_ERR_MALFORMED_UTF8:  LG_ERROR("Could not subscribe %s - no valid utf-8.", sub->topic);   break;
+        case MOSQ_ERR_OVERSIZE_PACKET: LG_ERROR("Could not subscribe %s - oversized packet.", sub->topic); break;
+        case MOSQ_ERR_SUCCESS:         LG_INFO("Subscribed '%s'.", sub->topic);                            break;
         default:                       break;
       }
       ++sub;
@@ -47,9 +47,9 @@ void on_publish(struct mosquitto *mosq, void * userdata, int mid)
 
 void on_message(struct mosquitto *mosq, void * userdata, const struct mosquitto_message * msg) {
   struct mqtt_handle * hnd = (struct mqtt_handle *) userdata;
-  LG_INFO("Received message on topic %s (id:%d): %s.", msg->topic, msg->mid, (char *) msg->payload);
-  for (struct mqtt_sub * sub = hnd->cfg->subs; sub && sub->pattern && sub->pattern[0] != '\0'; ++sub) {
-    if (sub->id == msg->mid && sub->cb) {
+  LG_DEBUG("Received message on topic %s (id:%d): %s.", msg->topic, msg->mid, (char *) msg->payload);
+  for (struct mqtt_sub * sub = hnd->cfg->subs; sub && sub->topic; ++sub) {
+    if (sub->cb) {
       sub->cb(msg->topic, (char *) msg->payload);
       break;
     }
