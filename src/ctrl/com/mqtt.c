@@ -49,7 +49,7 @@ void on_message(struct mosquitto *mosq, void * userdata, const struct mosquitto_
   struct mqtt_handle * hnd = (struct mqtt_handle *) userdata;
   LG_DEBUG("Received message on topic %s (id:%d): %s.", msg->topic, msg->mid, (char *) msg->payload);
   for (struct mqtt_sub * sub = hnd->cfg->subs; sub && sub->topic; ++sub) {
-    if (sub->cb) {
+    if (strncmp(msg->topic, sub->topic, 256) == 0 && sub->cb) {
       sub->cb(msg->topic, (char *) msg->payload);
       break;
     }
