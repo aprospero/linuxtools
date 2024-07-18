@@ -169,6 +169,27 @@ void mqtt_publish_formatted(struct mqtt_handle * hnd, const char * type, const c
   }
 }
 
+void mqtt_publish_raw(struct mqtt_handle * hnd, const char * topic, const char * payload)
+{
+  int result = mosquitto_publish(hnd->mosq, NULL, topic, strlen(payload), payload, hnd->cfg->qos, FALSE);
+
+  switch (result)
+  {
+    case MOSQ_ERR_SUCCESS            : break;
+    case MOSQ_ERR_INVAL              :
+    case MOSQ_ERR_NOMEM              :
+    case MOSQ_ERR_NO_CONN            :
+    case MOSQ_ERR_PROTOCOL           :
+    case MOSQ_ERR_PAYLOAD_SIZE       :
+    case MOSQ_ERR_MALFORMED_UTF8     :
+    case MOSQ_ERR_QOS_NOT_SUPPORTED  :
+    case MOSQ_ERR_OVERSIZE_PACKET    :
+      LG_ERROR("MQTT - Could not publish '%s' to broker. Error returned: %u", topic, result);
+      break;
+  }
+
+}
+
 void mqtt_publish(struct mqtt_handle * hnd, const char * type, const char * entity, int value)
 {
   mqtt_publish_formatted(hnd, type, entity, "%d", value);
