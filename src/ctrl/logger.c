@@ -55,20 +55,24 @@ const char * log_facility_txt [] = {
 
 static void log_stdout_stderr(const enum log_level ll, const char * format, va_list ap)
 {
-  static char tmp[MAX_LOG_LEN];
+  static char tmp[MAX_LOG_LEN] = { '\0' };
   static char tim[64];
 
   FILE * fd;
   struct tm * tm;
   struct timespec tp;
+  size_t pos;
 
   clock_gettime(CLOCK_REALTIME, &tp);
   tm = localtime(&tp.tv_sec);
   strftime(tim, sizeof(tim), "%d.%m.%y %H:%M:%S",tm);
 
-  vsprintf(tmp, format, ap);
+  pos = vsnprintf(tmp, sizeof(tmp) - 1, format, ap);
 
-  tmp[sizeof(tmp) - 1] = '\0';
+  if (pos < sizeof(tmp) - 2 && tmp[pos - 1] != '\r') {
+    tmp[pos] = '\n';
+    tmp[pos+1] = '\0';
+  }
 
   switch (ll)
   {
@@ -77,7 +81,7 @@ static void log_stdout_stderr(const enum log_level ll, const char * format, va_l
     case LL_WARN    : fd = stderr; break;
     default         : fd = stdout; break;
   }
-  fprintf (fd, "[%s.%06ld][%s] %s\n", tim, tp.tv_nsec / 1000, log_level_txt[ll], tmp);
+  fprintf (fd, "[%s.%06ld][%s] %s", tim, tp.tv_nsec / 1000, log_level_txt[ll], tmp);
 }
 
 
