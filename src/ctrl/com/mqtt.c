@@ -199,7 +199,7 @@ void mqtt_publish(struct mqtt_handle * hnd, const char * type, const char * enti
 void mqtt_loop(struct mqtt_handle * hnd, int timeout)
 {
   int result;
-  result = mosquitto_loop(hnd->mosq, timeout, 1);  // this calls mosquitto_loop() in a loop, it will exit once the client disconnects cleanly
+  result = mosquitto_loop(hnd->mosq, timeout, 1);
   switch (result)
   {
     case MOSQ_ERR_SUCCESS   : break;
