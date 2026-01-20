@@ -1,6 +1,8 @@
 #ifndef _H_LINUXTOOLS_CTRL_COM_MQTT
 #define _H_LINUXTOOLS_CTRL_COM_MQTT
 
+#define LINUXTOOLS_MQTT_KEEPALIVE 10 // in seconds
+
 struct mqtt_handle;
 
 enum mqtt_retval

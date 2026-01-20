@@ -106,7 +106,7 @@ enum mqtt_retval mqtt_init(struct mqtt_handle ** hnd, struct mqtt_config * cfg)
     LG_DEBUG("MQTT broker callbacks set.");
   }
 
-  if ((result = mosquitto_connect((*hnd)->mosq, (*hnd)->cfg->remote_address, (*hnd)->cfg->remote_port, 10)) != MOSQ_ERR_SUCCESS)
+  if ((result = mosquitto_connect((*hnd)->mosq, (*hnd)->cfg->remote_address, (*hnd)->cfg->remote_port, LINUXTOOLS_MQTT_KEEPALIVE)) != MOSQ_ERR_SUCCESS)
   {
     if (result == MOSQ_ERR_ERRNO)
       return MQTT_RET_RETRY;
